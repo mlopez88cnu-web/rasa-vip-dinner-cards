@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 /* ── Embedded SVG brand marks ── */
 const logos = {
@@ -432,32 +432,97 @@ function GuestCard({ guest, index, total }) {
   );
 }
 
-function useSwipe(onSwipeLeft, onSwipeRight) {
+function SwipeableCard({ guest, index, total, onNext, onPrev, canNext, canPrev }) {
+  const [dragX, setDragX] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [slideDir, setSlideDir] = useState(0); // -1 = left exit, 1 = right exit
   const touchStart = useRef(null);
-  const touchEnd = useRef(null);
-  const minSwipeDistance = 50;
+  const containerRef = useRef(null);
+
+  // Reset animation when card changes
+  useEffect(() => {
+    setIsAnimating(true);
+    setSlideDir(0);
+    setDragX(0);
+    const t = setTimeout(() => setIsAnimating(false), 350);
+    return () => clearTimeout(t);
+  }, [index]);
 
   const onTouchStart = useCallback((e) => {
-    touchEnd.current = null;
+    if (isAnimating) return;
     touchStart.current = e.targetTouches[0].clientX;
-  }, []);
+    setDragX(0);
+  }, [isAnimating]);
 
   const onTouchMove = useCallback((e) => {
-    touchEnd.current = e.targetTouches[0].clientX;
-  }, []);
+    if (touchStart.current === null || isAnimating) return;
+    const diff = e.targetTouches[0].clientX - touchStart.current;
+    // Add resistance at edges
+    if ((!canPrev && diff > 0) || (!canNext && diff < 0)) {
+      setDragX(diff * 0.2);
+    } else {
+      setDragX(diff);
+    }
+  }, [isAnimating, canPrev, canNext]);
 
   const onTouchEnd = useCallback(() => {
-    if (!touchStart.current || !touchEnd.current) return;
-    const distance = touchStart.current - touchEnd.current;
-    if (Math.abs(distance) >= minSwipeDistance) {
-      if (distance > 0) onSwipeLeft();
-      else onSwipeRight();
-    }
+    if (touchStart.current === null || isAnimating) return;
     touchStart.current = null;
-    touchEnd.current = null;
-  }, [onSwipeLeft, onSwipeRight]);
+    const threshold = 60;
+    if (dragX < -threshold && canNext) {
+      setSlideDir(-1);
+      setIsAnimating(true);
+      setTimeout(() => { onNext(); }, 250);
+    } else if (dragX > threshold && canPrev) {
+      setSlideDir(1);
+      setIsAnimating(true);
+      setTimeout(() => { onPrev(); }, 250);
+    } else {
+      setDragX(0);
+    }
+  }, [dragX, isAnimating, canNext, canPrev, onNext, onPrev]);
 
-  return { onTouchStart, onTouchMove, onTouchEnd };
+  // Determine transform
+  let translateX, opacity, transition;
+  if (slideDir !== 0) {
+    // Sliding out
+    translateX = slideDir < 0 ? "-110%" : "110%";
+    opacity = 0;
+    transition = "transform 0.25s ease-in, opacity 0.25s ease-in";
+  } else if (isAnimating) {
+    // Sliding in (new card appearing)
+    translateX = "0px";
+    opacity = 1;
+    transition = "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease-out";
+  } else if (dragX !== 0) {
+    // Dragging
+    translateX = `${dragX}px`;
+    opacity = 1 - Math.abs(dragX) / 600;
+    transition = "none";
+  } else {
+    translateX = "0px";
+    opacity = 1;
+    transition = "transform 0.3s ease-out, opacity 0.3s ease-out";
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
+      style={{ touchAction: "pan-y", overflow: "hidden" }}
+    >
+      <div style={{
+        transform: `translateX(${translateX})`,
+        opacity,
+        transition,
+        willChange: "transform, opacity",
+      }}>
+        <GuestCard guest={guest} index={index} total={total} />
+      </div>
+    </div>
+  );
 }
 
 export default function VIPDinnerCards() {
@@ -470,8 +535,6 @@ export default function VIPDinnerCards() {
   const goPrev = useCallback(() => {
     setCurrentIndex(i => Math.max(0, i - 1));
   }, []);
-
-  const swipeHandlers = useSwipe(goNext, goPrev);
 
   return (
     <div style={{
@@ -508,9 +571,15 @@ export default function VIPDinnerCards() {
 
       {viewMode === "single" ? (
         <>
-          <div {...swipeHandlers} style={{ touchAction: "pan-y" }}>
-            <GuestCard guest={guests[currentIndex]} index={currentIndex} total={guests.length} />
-          </div>
+          <SwipeableCard
+            guest={guests[currentIndex]}
+            index={currentIndex}
+            total={guests.length}
+            onNext={goNext}
+            onPrev={goPrev}
+            canNext={currentIndex < guests.length - 1}
+            canPrev={currentIndex > 0}
+          />
 
           <div style={{
             maxWidth: 720, margin: "0 auto",
