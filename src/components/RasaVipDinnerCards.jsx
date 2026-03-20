@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 
 /* ── Embedded SVG brand marks ── */
 const logos = {
@@ -328,7 +328,8 @@ function GuestCard({ guest, index, total }) {
   return (
     <div style={{
       background: "#0f1117", border: "1px solid #1e2030", borderRadius: 16,
-      padding: "36px 40px 32px", maxWidth: 720, margin: "0 auto 32px",
+      padding: "clamp(20px, 4vw, 36px) clamp(16px, 4vw, 40px) clamp(20px, 4vw, 32px)",
+      maxWidth: 720, margin: "0 auto 32px",
       position: "relative", overflow: "hidden",
     }}>
       <div style={{
@@ -338,34 +339,35 @@ function GuestCard({ guest, index, total }) {
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+        <div style={{ display: "flex", gap: 14, alignItems: "flex-start", minWidth: 0 }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-            <ProfilePhoto url={guest.photoUrl} name={guest.name} size={56} />
-            <CompanyLogo company={guest.company} size={32} />
+            <ProfilePhoto url={guest.photoUrl} name={guest.name} size={80} />
+            <CompanyLogo company={guest.company} size={36} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{
               fontFamily: "'Playfair Display', Georgia, serif",
-              fontSize: 28, fontWeight: 700, color: "#f0f0f5",
+              fontSize: "clamp(20px, 5vw, 28px)", fontWeight: 700, color: "#f0f0f5",
               lineHeight: 1.2, marginBottom: 4,
             }}>{guest.name}</div>
             <div style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 13, color: "#8b8fa3", marginBottom: 2,
+              fontSize: "clamp(11px, 2.5vw, 13px)", color: "#8b8fa3", marginBottom: 2,
+              wordWrap: "break-word",
             }}>{guest.title}</div>
             <div style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 14, color: "#7c5cfc", fontWeight: 600,
+              fontSize: "clamp(11px, 2.5vw, 14px)", color: "#7c5cfc", fontWeight: 600,
             }}>
               {guest.company}
               <span style={{ color: "#3a3d50", margin: "0 8px" }}>|</span>
-              <span style={{ color: "#5a5d70", fontWeight: 400, fontSize: 12 }}>{guest.industry}</span>
+              <span style={{ color: "#5a5d70", fontWeight: 400, fontSize: "clamp(10px, 2vw, 12px)" }}>{guest.industry}</span>
             </div>
           </div>
         </div>
         <div style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: 11, color: "#3a3d50", textAlign: "right", paddingTop: 4,
+          fontSize: 11, color: "#3a3d50", textAlign: "right", paddingTop: 4, flexShrink: 0,
         }}>{index + 1} / {total}</div>
       </div>
 
@@ -430,13 +432,50 @@ function GuestCard({ guest, index, total }) {
   );
 }
 
+function useSwipe(onSwipeLeft, onSwipeRight) {
+  const touchStart = useRef(null);
+  const touchEnd = useRef(null);
+  const minSwipeDistance = 50;
+
+  const onTouchStart = useCallback((e) => {
+    touchEnd.current = null;
+    touchStart.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const onTouchMove = useCallback((e) => {
+    touchEnd.current = e.targetTouches[0].clientX;
+  }, []);
+
+  const onTouchEnd = useCallback(() => {
+    if (!touchStart.current || !touchEnd.current) return;
+    const distance = touchStart.current - touchEnd.current;
+    if (Math.abs(distance) >= minSwipeDistance) {
+      if (distance > 0) onSwipeLeft();
+      else onSwipeRight();
+    }
+    touchStart.current = null;
+    touchEnd.current = null;
+  }, [onSwipeLeft, onSwipeRight]);
+
+  return { onTouchStart, onTouchMove, onTouchEnd };
+}
+
 export default function VIPDinnerCards() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewMode, setViewMode] = useState("single");
 
+  const goNext = useCallback(() => {
+    setCurrentIndex(i => Math.min(guests.length - 1, i + 1));
+  }, []);
+  const goPrev = useCallback(() => {
+    setCurrentIndex(i => Math.max(0, i - 1));
+  }, []);
+
+  const swipeHandlers = useSwipe(goNext, goPrev);
+
   return (
     <div style={{
-      background: "#0a0b10", minHeight: "100vh", padding: "24px 16px",
+      background: "#0a0b10", minHeight: "100vh", padding: "clamp(12px, 3vw, 24px) clamp(8px, 2vw, 16px)",
       fontFamily: "'Inter', 'Segoe UI', system-ui, sans-serif",
     }}>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -448,7 +487,7 @@ export default function VIPDinnerCards() {
         }}>Rasa — VIP Dinner Briefing</div>
         <div style={{
           fontFamily: "'Playfair Display', Georgia, serif",
-          fontSize: 22, fontWeight: 700, color: "#f0f0f5", marginBottom: 4,
+          fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 700, color: "#f0f0f5", marginBottom: 4,
         }}>Guest Intelligence Cards</div>
         <div style={{
           fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#4a4d60",
@@ -469,24 +508,28 @@ export default function VIPDinnerCards() {
 
       {viewMode === "single" ? (
         <>
-          <GuestCard guest={guests[currentIndex]} index={currentIndex} total={guests.length} />
+          <div {...swipeHandlers} style={{ touchAction: "pan-y" }}>
+            <GuestCard guest={guests[currentIndex]} index={currentIndex} total={guests.length} />
+          </div>
 
           <div style={{
             maxWidth: 720, margin: "0 auto",
             display: "flex", justifyContent: "space-between", alignItems: "center",
+            gap: 8,
           }}>
             <button
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+              onClick={goPrev}
               disabled={currentIndex === 0}
               style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                padding: "8px 18px", borderRadius: 8, border: "1px solid #1e2030",
+                fontFamily: "'JetBrains Mono', monospace", fontSize: "clamp(11px, 2.5vw, 12px)",
+                padding: "8px clamp(10px, 2vw, 18px)", borderRadius: 8, border: "1px solid #1e2030",
                 background: currentIndex === 0 ? "transparent" : "#13141f",
                 color: currentIndex === 0 ? "#2a2d40" : "#8b8fa3",
                 cursor: currentIndex === 0 ? "default" : "pointer",
-              }}>← Previous</button>
+                flexShrink: 0,
+              }}>← Prev</button>
 
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{ display: "flex", gap: "clamp(3px, 0.8vw, 6px)", flexWrap: "wrap", justifyContent: "center" }}>
               {guests.map((g, i) => (
                 <button key={i} onClick={() => setCurrentIndex(i)} title={g.name} style={{
                   width: i === currentIndex ? 24 : 8, height: 8, borderRadius: 4,
@@ -497,14 +540,15 @@ export default function VIPDinnerCards() {
             </div>
 
             <button
-              onClick={() => setCurrentIndex(Math.min(guests.length - 1, currentIndex + 1))}
+              onClick={goNext}
               disabled={currentIndex === guests.length - 1}
               style={{
-                fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
-                padding: "8px 18px", borderRadius: 8, border: "1px solid #1e2030",
+                fontFamily: "'JetBrains Mono', monospace", fontSize: "clamp(11px, 2.5vw, 12px)",
+                padding: "8px clamp(10px, 2vw, 18px)", borderRadius: 8, border: "1px solid #1e2030",
                 background: currentIndex === guests.length - 1 ? "transparent" : "#13141f",
                 color: currentIndex === guests.length - 1 ? "#2a2d40" : "#8b8fa3",
                 cursor: currentIndex === guests.length - 1 ? "default" : "pointer",
+                flexShrink: 0,
               }}>Next →</button>
           </div>
 
