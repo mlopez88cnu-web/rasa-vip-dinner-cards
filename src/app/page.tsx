@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import VIPDinnerCards from "@/components/RasaVipDinnerCards";
 
-const PASSCODE = "RASA20206";
+const PASSCODE = "RASA2026";
 
 export default function Home() {
   const [authorized, setAuthorized] = useState(false);
