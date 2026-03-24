@@ -72,6 +72,12 @@ const logos = {
       <text x="26" y="34" textAnchor="middle" fontFamily="Arial,sans-serif" fontWeight="800" fontSize="16" fill="#ffffff" letterSpacing="1">VISA</text>
     </svg>
   ),
+  "KPMG": (s) => (
+    <svg viewBox="0 0 52 52" width={s} height={s}>
+      <rect width="52" height="52" rx="12" fill="#00338D"/>
+      <text x="26" y="33" textAnchor="middle" fontFamily="Arial,sans-serif" fontWeight="800" fontSize="12" fill="#ffffff" letterSpacing="0.5">KPMG</text>
+    </svg>
+  ),
 };
 
 function CompanyLogo({ company, size = 52 }) {
@@ -225,6 +231,23 @@ const guests = [
       "He's been tracking the 'Delegate AI coworker' product — ask how Visa thinks about AI assistants that can autonomously transact on behalf of users.",
       "Visa's 'Intelligent Commerce' initiative enables autonomous AI agents to transact on their network — directly relevant to Rasa's agentic orchestration story.",
       "He follows Compound AI's analyst tools closely — explore how Visa sees compound AI systems and multi-agent architectures fitting into payments."
+    ],
+    hasLinkedIn: true,
+  },
+  {
+    name: "Fabiana Clemente",
+    photoUrl: "/headshots/Fabiana Clemente.jpeg",
+    title: "Senior Director - Distinguished Engineer",
+    company: "KPMG",
+    industry: "Professional Services & Consulting",
+    aiStage: "Optimizing",
+    buildVsBuy: "Mixed",
+    agenticReadiness: "High",
+    companyBrief: "KPMG has platformized generative AI across audit, tax, and advisory practices through tools like KPMG Clara and Ignite. An early access partner for Microsoft 365 Copilot, they maintain internal engineering teams developing proprietary conversational agents and automated workflows.",
+    conversationStarters: [
+      "She's been advancing synthetic data and data quality initiatives at KPMG — ask how synthetic data strategies intersect with building reliable agentic AI systems.",
+      "She's active in the Women in AI community and engaged with research on LLM hallucination inevitability — explore how KPMG thinks about trust and reliability in production AI.",
+      "KPMG is hiring engineers to build conversational agents and workflow automation — a direct opening for how Rasa's orchestration fits into their enterprise AI delivery model."
     ],
     hasLinkedIn: true,
   },
