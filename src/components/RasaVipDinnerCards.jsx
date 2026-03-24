@@ -161,23 +161,6 @@ const guests = [
     hasLinkedIn: true,
   },
   {
-    name: "Han-chung Lee",
-    photoUrl: "/headshots/Han Chung Lee.jpeg",
-    title: "Senior Director of Data & AI",
-    company: "Moody's Analytics",
-    industry: "Financial Services & Analytics",
-    aiStage: "Scaling",
-    buildVsBuy: "Mixed",
-    agenticReadiness: "Medium",
-    companyBrief: "Moody's has productionized multiple AI tools including a Research Assistant for customers and an internal CoPilot for 14,000 employees. They explicitly advertise 'agentic solutions' and are embedding agentic AI into their data ecosystem.",
-    conversationStarters: [
-      "He's authoring a book on AI Evaluation and Alignment for Manning Publications — lead with governance and evaluation frameworks for agentic systems.",
-      "Moody's has deployed an internal CoPilot to 14,000 employees — ask what they've learned about scaling AI adoption across a knowledge-work organization.",
-      "They're explicitly marketing 'agentic solutions' — explore where orchestration and multi-step workflows fit into their data ecosystem vision."
-    ],
-    hasLinkedIn: true,
-  },
-  {
     name: "Shilpa Daule",
     photoUrl: "/headshots/Shilpa Daule.jpeg",
     title: "Director - Product Management, Analytics and AI/ML",
@@ -191,23 +174,6 @@ const guests = [
       "She's been engaging with content on digital analytics and customer experience using AI and fintech tools — ask how SVB thinks about AI for their own operations vs. funding others.",
       "SVB sits at the nexus of the AI startup ecosystem — explore what patterns she's seeing across their portfolio companies that could inform SVB's own AI strategy.",
       "The data cloud and semantic layer innovations she's tracking are foundational to AI — a good bridge to discuss infrastructure-first approaches with Rasa."
-    ],
-    hasLinkedIn: true,
-  },
-  {
-    name: "Anindya Sundar Das",
-    photoUrl: "/headshots/Anindya Sundar.jpeg",
-    title: "Senior Director, Head of Global Service Design",
-    company: "Uber",
-    industry: "Technology / Mobility",
-    aiStage: "Optimizing",
-    buildVsBuy: "Mixed",
-    agenticReadiness: "Medium",
-    companyBrief: "Uber operates a mature ML-as-a-service platform (Michelangelo) supporting 5,000+ production models and 10M real-time predictions/second. Extending to full LLMOps and commercializing internal AI data-labeling and evaluation tools.",
-    conversationStarters: [
-      "He's been engaging with content about AI moving from reading/summarizing to taking action via 'agent layers' — directly relevant to Rasa's agentic positioning.",
-      "The Uber-Zoox robotaxi partnership is a recent highlight — a light opener before pivoting to how Uber thinks about autonomous decision-making in their service layer.",
-      "Uber's Michelangelo platform is legendary in MLOps — ask how they're thinking about the orchestration layer on top of it for generative AI."
     ],
     hasLinkedIn: true,
   },
